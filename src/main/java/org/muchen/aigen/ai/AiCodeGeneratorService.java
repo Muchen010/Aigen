@@ -1,6 +1,7 @@
 package org.muchen.aigen.ai;
 
 import dev.langchain4j.service.SystemMessage;
+import dev.langchain4j.service.UserMessage;
 import org.muchen.aigen.ai.model.HtmlCodeResult;
 import org.muchen.aigen.ai.model.MultiFileCodeResult;
 import reactor.core.publisher.Flux;
@@ -14,7 +15,7 @@ public interface AiCodeGeneratorService {
      * @return 生成的代码结果
      */
     @SystemMessage(fromResource = "prompt/codegen-html-system-prompt.txt")
-    HtmlCodeResult generateHtmlCode(String userMessage);
+    HtmlCodeResult generateHtmlCode(@UserMessage String userMessage);
 
     /**
      * 生成多文件代码

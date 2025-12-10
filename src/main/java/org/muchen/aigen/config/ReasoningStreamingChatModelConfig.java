@@ -1,4 +1,4 @@
-package org.muchen.aigen.constant;
+package org.muchen.aigen.config;
 
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;

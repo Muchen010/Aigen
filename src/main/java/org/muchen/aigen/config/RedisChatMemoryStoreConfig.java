@@ -1,4 +1,4 @@
-package org.muchen.aigen.constant;
+package org.muchen.aigen.config;
 
 import dev.langchain4j.community.store.memory.chat.redis.RedisChatMemoryStore;
 import lombok.Data;

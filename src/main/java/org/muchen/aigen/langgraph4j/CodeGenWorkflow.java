@@ -13,7 +13,9 @@ import org.muchen.aigen.exception.ErrorCode;
 import org.muchen.aigen.langgraph4j.model.QualityResult;
 import org.muchen.aigen.langgraph4j.node.*;
 import org.muchen.aigen.langgraph4j.state.WorkflowContext;
+import org.muchen.aigen.model.entity.User;
 import org.muchen.aigen.model.enums.CodeGenTypeEnum;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
 import java.util.Map;
@@ -23,6 +25,7 @@ import static org.bsc.langgraph4j.StateGraph.START;
 import static org.bsc.langgraph4j.action.AsyncEdgeAction.edge_async;
 
 @Slf4j
+@Service
 public class CodeGenWorkflow {
 
     /**
@@ -63,20 +66,28 @@ public class CodeGenWorkflow {
     }
 
     /**
-     * 执行工作流
+     * 执行工作流 - 同步版本 (已更新参数)
+     *
+     * @param appId          应用ID
+     * @param originalPrompt 用户输入
+     * @param user           当前用户
+     * @param codeGenType    代码生成类型
      */
-    public WorkflowContext executeWorkflow(String originalPrompt) {
+    public WorkflowContext executeWorkflow(Long appId, String originalPrompt, User user, CodeGenTypeEnum codeGenType) {
         CompiledGraph<MessagesState<String>> workflow = createWorkflow();
 
-        // 初始化 WorkflowContext
+        // 初始化 WorkflowContext (注入所有元数据)
         WorkflowContext initialContext = WorkflowContext.builder()
+                .appId(appId)                // 新增
+                .userId(user.getId())        // 新增
+                .generationType(codeGenType) // 新增
                 .originalPrompt(originalPrompt)
                 .currentStep("初始化")
                 .build();
 
         GraphRepresentation graph = workflow.getGraph(GraphRepresentation.Type.MERMAID);
         log.info("工作流图:\n{}", graph.content());
-        log.info("开始执行代码生成工作流");
+        log.info("开始执行代码生成工作流，AppId: {}, User: {}", appId, user.getId());
 
         WorkflowContext finalContext = null;
         int stepCounter = 1;
@@ -120,14 +131,22 @@ public class CodeGenWorkflow {
     }
 
     /**
-     * 执行工作流（Flux 流式输出版本）
+     * 执行工作流 - Flux 流式版本 (已更新参数)
+     *
+     * @param appId          应用ID
+     * @param originalPrompt 用户输入
+     * @param user           当前用户
+     * @param codeGenType    代码生成类型
      */
-    public Flux<String> executeWorkflowWithFlux(String originalPrompt) {
+    public Flux<String> executeWorkflowWithFlux(Long appId, String originalPrompt, User user, CodeGenTypeEnum codeGenType) {
         return Flux.create(sink -> {
             Thread.startVirtualThread(() -> {
                 try {
                     CompiledGraph<MessagesState<String>> workflow = createWorkflow();
                     WorkflowContext initialContext = WorkflowContext.builder()
+                            .appId(appId)
+                            .userId(user.getId())
+                            .generationType(codeGenType)
                             .originalPrompt(originalPrompt)
                             .currentStep("初始化")
                             .build();

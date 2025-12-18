@@ -18,16 +18,21 @@ public class RouterNode {
             WorkflowContext context = WorkflowContext.getContext(state);
             log.info("执行节点: 智能路由");
 
-            CodeGenTypeEnum generationType;
-            try {
-                // 获取AI路由服务
-                AiCodeGenTypeRoutingService routingService = SpringContextUtil.getBean(AiCodeGenTypeRoutingService.class);
-                // 根据原始提示词进行智能路由
-                generationType = routingService.routeCodeGenType(context.getOriginalPrompt());
-                log.info("AI智能路由完成，选择类型: {} ({})", generationType.getValue(), generationType.getText());
-            } catch (Exception e) {
-                log.error("AI智能路由失败，使用默认HTML类型: {}", e.getMessage());
-                generationType = CodeGenTypeEnum.HTML;
+            CodeGenTypeEnum generationType = context.getGenerationType();
+
+            // 1. 如果 Context 中已经预设了类型，直接使用
+            if (generationType != null) {
+                log.info("使用上下文预设的代码生成类型: {} ({})", generationType.getValue(), generationType.getText());
+            } else {
+                // 2. 否则调用 AI 进行判断（兜底逻辑）
+                try {
+                    AiCodeGenTypeRoutingService routingService = SpringContextUtil.getBean(AiCodeGenTypeRoutingService.class);
+                    generationType = routingService.routeCodeGenType(context.getOriginalPrompt());
+                    log.info("AI智能路由完成，选择类型: {} ({})", generationType.getValue(), generationType.getText());
+                } catch (Exception e) {
+                    log.error("AI智能路由失败，使用默认HTML类型: {}", e.getMessage());
+                    generationType = CodeGenTypeEnum.HTML;
+                }
             }
 
             // 更新状态

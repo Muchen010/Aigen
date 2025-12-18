@@ -11,6 +11,7 @@ import org.muchen.aigen.langgraph4j.utils.SpringContextUtil;
 import org.muchen.aigen.model.enums.CodeGenTypeEnum;
 import reactor.core.publisher.Flux;
 
+import java.io.File;
 import java.time.Duration;
 
 import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
@@ -23,20 +24,26 @@ public class CodeGeneratorNode {
             WorkflowContext context = WorkflowContext.getContext(state);
             log.info("执行节点: 代码生成");
 
-            // 使用增强提示词作为发给 AI 的用户消息
-            String userMessage = context.getEnhancedPrompt();
+            // 1. 准备参数
+            String userMessage = buildUserMessage(context); // 使用抽取的方法构建消息（包含质检修复逻辑）
             CodeGenTypeEnum generationType = context.getGenerationType();
-            // 获取 AI 代码生成外观服务
+            Long appId = context.getAppId();
+
+            // 2. 获取服务并生成
             AiCodeGeneratorFacade codeGeneratorFacade = SpringContextUtil.getBean(AiCodeGeneratorFacade.class);
-            log.info("开始生成代码，类型: {} ({})", generationType.getValue(), generationType.getText());
-            // 先使用固定的 appId (后续再整合到业务中)
-            Long appId = 0L;
-            // 调用流式代码生成
+            log.info("开始生成代码，AppId: {}, 类型: {}", appId, generationType.getValue());
+
+            // 3. 调用流式生成 (Facade 内部会调用 Saver 将代码写入到 AppConstant.CODE_OUTPUT_ROOT_DIR + type_appId)
             Flux<String> codeStream = codeGeneratorFacade.generateAndSaveCodeStream(userMessage, generationType, appId);
-            // 同步等待流式输出完成
-            codeStream.blockLast(Duration.ofMinutes(10)); // 最多等待 10 分钟
-            // 根据类型设置生成目录
-            String generatedCodeDir = String.format("%s/%s_%s", AppConstant.CODE_OUTPUT_ROOT_DIR, generationType.getValue(), appId);
+
+            // 4. 等待生成完成 (注意：生产环境可能需要更复杂的超时处理)
+            codeStream.blockLast(Duration.ofMinutes(10));
+
+            // 5. 计算生成目录路径 (必须与 CodeFileSaverExecutor 中的逻辑保持一致)
+            // 路径格式: /root/dir/type_appId
+            String sourceDirName = generationType.getValue() + "_" + appId;
+            String generatedCodeDir = AppConstant.CODE_OUTPUT_ROOT_DIR + File.separator + sourceDirName;
+
             log.info("AI 代码生成完成，生成目录: {}", generatedCodeDir);
 
             // 更新状态

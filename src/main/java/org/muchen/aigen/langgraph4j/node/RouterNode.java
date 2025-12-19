@@ -24,7 +24,7 @@ public class RouterNode {
             if (generationType != null) {
                 log.info("使用上下文预设的代码生成类型: {} ({})", generationType.getValue(), generationType.getText());
             } else {
-                // 2. 否则调用 AI 进行判断（兜底逻辑）
+                // 2. 否则调用 AI 进行判断
                 try {
                     AiCodeGenTypeRoutingService routingService = SpringContextUtil.getBean(AiCodeGenTypeRoutingService.class);
                     generationType = routingService.routeCodeGenType(context.getOriginalPrompt());

@@ -148,7 +148,26 @@
 			<artifactId>langgraph4j-studio-springboot</artifactId>
 			<version>1.6.0-rc2</version>
 		</dependency>
-
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-easy-rag</artifactId>
+			<version>1.0.0-beta3</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-pgvector</artifactId>
+			<version>1.0.0-beta3</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-community-dashscope</artifactId>
+			<version>1.1.0-beta7</version>
+		</dependency>
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-document-parser-apache-tika</artifactId>
+			<version>1.1.0-beta7</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

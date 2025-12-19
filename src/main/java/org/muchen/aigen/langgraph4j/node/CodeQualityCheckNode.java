@@ -78,9 +78,7 @@ public class CodeQualityCheckNode {
         }
         StringBuilder codeContent = new StringBuilder();
         codeContent.append("# 项目文件结构和代码内容\n\n");
-        // 使用 Hutool 的 walkFiles 方法遍历所有文件
         FileUtil.walkFiles(directory, file -> {
-            // 过滤条件：跳过隐藏文件、特定目录下的文件、非代码文件
             if (shouldSkipFile(file, directory)) {
                 return;
             }
@@ -99,11 +97,9 @@ public class CodeQualityCheckNode {
      */
     private static boolean shouldSkipFile(File file, File rootDir) {
         String relativePath = FileUtil.subPath(rootDir.getAbsolutePath(), file.getAbsolutePath());
-        // 跳过隐藏文件
         if (file.getName().startsWith(".")) {
             return true;
         }
-        // 跳过特定目录下的文件
         return relativePath.contains("node_modules" + File.separator) ||
                 relativePath.contains("dist" + File.separator) ||
                 relativePath.contains("target" + File.separator) ||

@@ -94,6 +94,11 @@ public class WorkflowContext implements Serializable {
      */
     private QualityResult qualityResult;
 
+    /**
+     * RAG 检索到的增强上下文
+     */
+    private String retrievedKnowledge;
+
 
     @Serial
     private static final long serialVersionUID = 1L;

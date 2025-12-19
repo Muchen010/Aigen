@@ -26,12 +26,10 @@ public class ProjectBuilderNode {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "构建失败：找不到生成的代码目录");
             }
 
-            String buildResultDir = generatedCodeDir; // 默认为原目录
+            String buildResultDir = generatedCodeDir;
 
             try {
-                // 目前仅 Vue 项目需要构建，其他类型直接跳过（Router 中已做区分，这里是双重保障）
                 VueProjectBuilder vueBuilder = SpringContextUtil.getBean(VueProjectBuilder.class);
-                // 只有当生成的是 Vue 项目结构（包含 package.json）时才真正执行构建
                 File packageJson = new File(generatedCodeDir, "package.json");
                 if (packageJson.exists()) {
                     log.info("检测到 Vue 项目，开始执行构建...");
@@ -47,8 +45,6 @@ public class ProjectBuilderNode {
                 }
             } catch (Exception e) {
                 log.error("项目构建异常: {}", e.getMessage(), e);
-                // 这里可以选择抛出异常中断流程，或者记录错误继续（视业务需求而定）
-                // throw new BusinessException(ErrorCode.SYSTEM_ERROR, "项目构建异常: " + e.getMessage());
             }
 
             // 更新状态

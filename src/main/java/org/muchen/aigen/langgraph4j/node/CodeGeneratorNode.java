@@ -1,5 +1,6 @@
 package org.muchen.aigen.langgraph4j.node;
 
+import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.bsc.langgraph4j.action.AsyncNodeAction;
 import org.bsc.langgraph4j.prebuilt.MessagesState;
@@ -25,7 +26,8 @@ public class CodeGeneratorNode {
             log.info("执行节点: 代码生成");
 
             // 1. 准备参数
-            String userMessage = buildUserMessage(context); // 使用抽取的方法构建消息（包含质检修复逻辑）
+            // 构建用户消息（包含 RAG 知识注入 + 质检修复逻辑）
+            String userMessage = buildUserMessage(context);
             CodeGenTypeEnum generationType = context.getGenerationType();
             Long appId = context.getAppId();
 
@@ -54,15 +56,38 @@ public class CodeGeneratorNode {
     }
 
     /**
-     * 构造用户消息，如果存在质检失败结果则添加错误修复信息
+     * 构造用户消息，集成 RAG 知识检索与质检修复逻辑
      */
     private static String buildUserMessage(WorkflowContext context) {
-        String userMessage = context.getEnhancedPrompt();
-        // 检查是否存在质检失败结果
+        // 1. 确定基础消息内容 (正常生成 prompt 或 修复 prompt)
+        String userMessage;
         QualityResult qualityResult = context.getQualityResult();
+
         if (isQualityCheckFailed(qualityResult)) {
-            // 直接将错误修复信息作为新的提示词（起到了修改的作用）
+            // 修复模式：使用错误信息作为 Prompt
             userMessage = buildErrorFixPrompt(qualityResult);
+        } else {
+            // 正常模式：使用 PromptEnhancer 增强后的 Prompt
+            userMessage = context.getEnhancedPrompt();
+        }
+
+        // 2. 注入 RAG 检索到的知识
+        String retrievedKnowledge = context.getRetrievedKnowledge();
+        if (StrUtil.isNotBlank(retrievedKnowledge)) {
+            log.info("🔍 [CodeGenerator] 检测到 RAG 知识上下文，正在注入 Prompt...");
+
+            String knowledgeInjection = String.format("""
+                    
+                    ### 📚 补充技术参考资料 (RAG Knowledge Base)
+                    以下是从知识库中检索到的最新技术文档，请在编写代码时 **优先遵循** 以下规范和 API 用法：
+                    
+                    %s
+                    
+                    --------------------------------------------------
+                    """, retrievedKnowledge);
+
+            // 策略：将参考资料拼接到 基础消息 的前面，作为前置上下文
+            userMessage = knowledgeInjection + "\n\n" + userMessage;
         }
         return userMessage;
     }

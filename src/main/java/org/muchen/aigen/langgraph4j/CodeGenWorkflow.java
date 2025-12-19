@@ -38,6 +38,7 @@ public class CodeGenWorkflow {
                     .addNode("image_collector", ImageCollectorNode.create())
                     .addNode("prompt_enhancer", PromptEnhancerNode.create())
                     .addNode("router", RouterNode.create())
+                    .addNode("knowledge_retrieval", KnowledgeRetrievalNode.create())
                     .addNode("code_generator", CodeGeneratorNode.create())
                     .addNode("code_quality_check", CodeQualityCheckNode.create())
                     .addNode("project_builder", ProjectBuilderNode.create())
@@ -46,7 +47,8 @@ public class CodeGenWorkflow {
                     .addEdge(START, "image_collector")
                     .addEdge("image_collector", "prompt_enhancer")
                     .addEdge("prompt_enhancer", "router")
-                    .addEdge("router", "code_generator")
+                    .addEdge("router", "knowledge_retrieval")
+                    .addEdge("knowledge_retrieval", "code_generator")
                     .addEdge("code_generator", "code_quality_check")
                     // 新增质检条件边：根据质检结果决定下一步
                     .addConditionalEdges("code_quality_check",
@@ -78,9 +80,9 @@ public class CodeGenWorkflow {
 
         // 初始化 WorkflowContext (注入所有元数据)
         WorkflowContext initialContext = WorkflowContext.builder()
-                .appId(appId)                // 新增
-                .userId(user.getId())        // 新增
-                .generationType(codeGenType) // 新增
+                .appId(appId)
+                .userId(user.getId())
+                .generationType(codeGenType)
                 .originalPrompt(originalPrompt)
                 .currentStep("初始化")
                 .build();

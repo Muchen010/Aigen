@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: Aigen
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 生产环境请在 application-local.yml 或环境变量中覆盖这些值
+    url: ${DB_URL:jdbc:mysql://localhost:3306/aigen}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+  # session 配置
+  session:
+    store-type: redis
+    # session 30 天过期
+    timeout: 2592000
+  profiles:
+    active: local
+  # redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ttl: 3600
+      timeout: 10s
+
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+  # cookie 30 天过期
+    session:
+      cookie:
+        max-age: 2592000
+# springdoc-openapi
+springdoc:
+  group-configs:
+    - group: 'default'
+      packages-to-scan: org.muchen.aigen.controller
+# knife4j
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+# Python AI 服务配置
+python:
+  ai:
+    service:
+      # Python AI 服务地址（本地开发默认 8100）
+      url: http://127.0.0.1:8100
+      # 服务间内部通讯密钥（与 aigen-python-ai/.env 中 JAVA_CORE_INTERNAL_SECRET 保持一致）
+      internal-secret: ${JAVA_CORE_INTERNAL_SECRET:}

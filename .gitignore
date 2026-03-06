@@ -1,8 +1,19 @@
 ### CUSTOM ###
 application-local.yml
-tmp
+tmp/
 
+# ==================== 敏感信息 (绝对不能提交) ====================
+# Python AI 服务的实际环境变量
+.env
+.env.local
+.env.production
+.env.*.local
+# aigen-python-ai 子项目的 .env
+aigen-python-ai/.env
+# 根目录 .env (Docker Compose 使用)
+.env
 
+### Spring Boot ###
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
@@ -36,3 +47,22 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Node.js / Vue 前端 ###
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+### Python ###
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+aigen-python-ai/.venv/
+aigen-python-ai/venv/
+aigen-python-ai/*.egg-info/
+
+### OS ###
+.DS_Store
+Thumbs.db
